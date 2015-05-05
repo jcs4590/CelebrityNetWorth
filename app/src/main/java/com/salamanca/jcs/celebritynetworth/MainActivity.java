@@ -1,25 +1,28 @@
 package com.salamanca.jcs.celebritynetworth;
 
+import android.app.ActionBar;
 import android.app.Activity;
 import android.app.Fragment;
 import android.app.FragmentManager;
+import android.content.res.Configuration;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.v7.app.ActionBarDrawerToggle;
+import android.support.v4.widget.DrawerLayout;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.ListAdapter;
+import android.widget.ListView;
 import android.widget.Toast;
 
 import com.google.gson.Gson;
-import com.jaunt.Element;
-import com.jaunt.JauntException;
-import com.jaunt.Node;
-import com.jaunt.UserAgent;
-
-import org.json.JSONObject;
+import com.jaunt.*;
 
 
 import java.io.IOException;
@@ -33,12 +36,58 @@ public class MainActivity extends Activity {
     private EditText searchTextField;
     private Celebrity currentCelebrity;
     private UserAgent userAgent;
+    private DrawerLayout drawerLayout;
+    private ListView listViewDrawer;
+    private String[] drawerMenuItems =  {"Search", "History", "Three"};
+    private ActionBar actionBar;
+    private ActionBarDrawerToggle drawerToggle;
+
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        currentCelebrity = new Celebrity();
         setContentView(R.layout.activity_main);
+
+        currentCelebrity = new Celebrity();
+        drawerLayout = (DrawerLayout)findViewById(R.id.drawer_layout);
+
+
+        actionBar = getActionBar();
+        // enable ActionBar app icon to behave as action to toggle nav drawer
+        actionBar.setDisplayHomeAsUpEnabled(true);
+        actionBar.setHomeButtonEnabled(true);
+
+        //set up action bar drawer toggle configurations
+        drawerToggle = new ActionBarDrawerToggle(this,drawerLayout,R.string.drawer_open,R.string.drawer_close){
+
+            @Override
+            public void onDrawerClosed(View drawerView) {
+                super.onDrawerClosed(drawerView);
+                actionBar.setTitle("Navigation!");
+                invalidateOptionsMenu(); // creates call to onPrepareOptionsMenu()
+
+            }
+
+            @Override
+            public void onDrawerOpened(View drawerView) {
+                super.onDrawerOpened(drawerView);
+                actionBar.setTitle(getTitle().toString());
+                invalidateOptionsMenu(); // creates call to onPrepareOptionsMenu()
+
+            }
+
+
+
+        };
+        drawerToggle.setDrawerIndicatorEnabled(true);
+        drawerLayout.setDrawerListener(drawerToggle);
+
+        //set up listView for the drawer
+        listViewDrawer = (ListView)findViewById(R.id.left_drawer);
+        listViewDrawer.setAdapter(new ArrayAdapter<String>(this,R.layout.drawer_list_item,drawerMenuItems));
+        listViewDrawer.setOnItemClickListener(new DrawerItemClickListener());
+
+
         fragmentManager = getFragmentManager();
         mainFragment = new MainFragment();
          userAgent = new UserAgent();
@@ -50,7 +99,7 @@ public class MainActivity extends Activity {
         searchTextField = (EditText) findViewById(R.id.searchTextField);
 
 
-        new ProcessSearchAndScrape().execute("http://www.celebritynetworth.com/random/");
+       new ProcessSearchAndScrape().execute("http://www.celebritynetworth.com/random/");
 
         randImage.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -93,6 +142,7 @@ public class ProcessSearchAndScrape extends AsyncTask<String,Void,Void>{
         try {
            //scrape website and add values to a Celebrity object
             if (!url[0].contains("random")) {
+
                 userAgent.visit(url[0]);
                 userAgent.doc.apply(currentCelebrity.getName());
                 userAgent.doc.submit("Search");
@@ -119,18 +169,18 @@ public class ProcessSearchAndScrape extends AsyncTask<String,Void,Void>{
 
                 currentCelebrity.setNetWorthString(allContent.outerHTML().contains("meta_row networth") ?
                         allContent.findFirst("<<div class=\"meta_row networth\">").findFirst("<div class=\"value\">").getText() :
-                        "Unkown");
+                        "Unknown");
                 currentCelebrity.setDateOfBirth(allContent.outerHTML().contains("meta_row birth_date") ?
                         allContent.findFirst("<<div class=\"meta_row birth_date\">").findFirst("<div class=\"value\">").getText() :
-                        "Unkown");
+                        "Unknown");
                 currentCelebrity.setPlaceOfBirth(allContent.outerHTML().contains("meta_row birth_place") ?
                         allContent.findFirst("<<div class=\"meta_row birth_place\">").findFirst("<div class=\"value\">").getText() :
-                        "Unkown");
+                        "Unknown");
 
 
                 currentCelebrity.setProfession(allContent.outerHTML().contains("meta_row profession") ?
                         allContent.findFirst("<<div class=\"meta_row profession\">").findFirst("<div class=\"value\">").getText() :
-                        "Unkown");
+                        "Unknown");
 
 
                 if (allContent.outerHTML().contains("meta_row category")) {
@@ -161,7 +211,7 @@ public class ProcessSearchAndScrape extends AsyncTask<String,Void,Void>{
 
                 currentCelebrity.setAnnualSalaryString(allContent.outerHTML().contains("meta_row salary") ?
                         allContent.findFirst("<<div class=\"meta_row salary\">").findFirst("<div class=\"value\">").getText() :
-                        "Unkown");
+                        "Unknown");
 
                 }
             else{
@@ -212,7 +262,36 @@ public class ProcessSearchAndScrape extends AsyncTask<String,Void,Void>{
         if (id == R.id.action_settings) {
             return true;
         }
-
+        //action bar drawer toggle icon
+        if (drawerToggle.onOptionsItemSelected(item)) {
+            return true;
+        }
         return super.onOptionsItemSelected(item);
     }
+
+    // The click listner for ListView in the navigation drawer
+    private class DrawerItemClickListener implements ListView.OnItemClickListener {
+        @Override
+        public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+            Toast.makeText(getApplicationContext(),position + " ",Toast.LENGTH_LONG).show();
+        }
+    }
+    private void selectItem(int position) {
+        // update the main content by replacing fragments
+
+    }
+
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+        drawerToggle.onConfigurationChanged(newConfig);
+    }
+
+    @Override
+    protected void onPostCreate(Bundle savedInstanceState) {
+        super.onPostCreate(savedInstanceState);
+        //syncs the drawer state with the action bar
+        drawerToggle.syncState();
+    }
+
 }
