@@ -131,4 +131,41 @@ public class Celebrity {
 
 
     }
+    public Celebrity(Celebrity celebrity) {
+        this.name = celebrity.getName();
+        this.netWorthString = celebrity.getNetWorthString();
+        this.annualSalaryString = celebrity.getAnnualSalaryString();
+        this.dateOfBirth = celebrity.getDateOfBirth();
+        this.placeOfBirth = celebrity.getPlaceOfBirth();
+        this.profession = celebrity.getProfession();
+        this.category = celebrity.getCategory();
+        this.info = celebrity.getInfo();
+        this.url = celebrity.getUrl();
+        this.imageUrl = celebrity.getImageUrl();
+    }
+
+
+
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Celebrity celebrity = (Celebrity) o;
+
+        if (!dateOfBirth.equals(celebrity.dateOfBirth)) return false;
+        if (!name.equals(celebrity.name)) return false;
+        if (!url.equals(celebrity.url)) return false;
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = name.hashCode();
+        result = 31 * result + dateOfBirth.hashCode();
+        result = 31 * result + url.hashCode();
+        return result;
+    }
 }

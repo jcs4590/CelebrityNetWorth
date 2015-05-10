@@ -5,7 +5,15 @@
     <string name="action_settings">Settings</string>
     <string name="drawer_open">Open navigation drawer</string>
     <string name="drawer_close">Close navigation drawer</string>
+    <string name="search_title">Search</string>
+    <string name="random">Random</string>
+    <string name="search_hint">Enter Celebrity Name</string>
 
-<!-- TODO: Remove or change this placeholder text -->
+
+
+    <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="title_activity_history">History</string>
+    <string name="title_activity_base_with_drawer">BaseWithDrawer</string>
+    <string name="title_activity_history_recycler_view_adapter">HistoryRecyclerViewAdapter</string>
 </resources>
